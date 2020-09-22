@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 
     puts("Generating random integers...");
     start = clock();
-    for (long long i = 0; i < n; i++) {
+    for (long long int i = 0; i < n; i++) {
         rand_num = rand();
         sign = rand() << 31;
         rand_num |= sign;
