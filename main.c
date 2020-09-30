@@ -5,7 +5,7 @@
 #include <time.h>
 
 #define MAX_FILE_NAME_LENGTH 30
-#define MAX_CHUNK_SIZE 1000
+#define MAX_CHUNK_SIZE 1000000
 
 static size_t split_file(const char *);
 static void read_file();
@@ -42,6 +42,9 @@ int main(int argc, char **argv) {
 }
 
 static size_t split_file(const char *f_in) {
+    clock_t start, end;
+    start = clock();
+
     FILE *fp_in = fopen(f_in, "r");
 
     if (!fp_in) {
@@ -91,6 +94,12 @@ static size_t split_file(const char *f_in) {
         fclose(fp_out);
     }
     fclose(fp_in);
+
+    end = clock();
+
+    printf("Elapsed Time of split_file: %lf secs\n",
+           (double)(end - start) / CLOCKS_PER_SEC);
+
     return file_count;
 }
 
