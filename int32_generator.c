@@ -3,12 +3,14 @@
 #include <time.h>
 #include <unistd.h>
 
+#define MAX_FILE_NAME_LENGTH 30
+
 int main(int argc, char **argv) {
     srand(time(NULL));
 
     /* Default values */
     long long int n = 3e9;
-    char filename[] = "input.txt";
+    char filename[MAX_FILE_NAME_LENGTH] = "input.txt";
 
     /* Too many arguments */
     if (argc > 3) {
@@ -38,7 +40,7 @@ int main(int argc, char **argv) {
         puts("Continue? (y: overwrite, n: abort)");
         char c;
         scanf("%c", &c);
-        if (c | ' ' != 'y')
+        if ((c | ' ') != 'y')
             exit(EXIT_FAILURE);
     }
 
