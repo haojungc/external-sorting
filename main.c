@@ -5,11 +5,17 @@
 #include <time.h>
 
 #define MAX_FILE_NAME_LENGTH 30
-#define MAX_CHUNK_SIZE 1000000
+#define MAX_FILES 1000000
+#define MAX_CHUNK_SIZE 10
 
-static size_t split_file(const char *);
+static size_t split_file_and_sort(const char *);
 static void read_file();
 static void external_merge_sort(const char *);
+static void merge_sort(int[], int, int);
+static void merge(int[], int, int, int);
+
+FILE *fp[MAX_FILES];
+int n[MAX_CHUNK_SIZE];
 
 int main(int argc, char **argv) {
     /* Default file */
@@ -34,12 +40,13 @@ int main(int argc, char **argv) {
 
     end = clock();
 
-    printf("Elapsed Time: %lf secs\n", (double)(end - start) / CLOCKS_PER_SEC);
+    printf("Total Elapsed Time: %lf secs\n",
+           (double)(end - start) / CLOCKS_PER_SEC);
 
     return 0;
 }
 
-static size_t split_file(const char *f_in) {
+static size_t split_file_and_sort(const char *f_in) {
     clock_t start, end;
     start = clock();
 
@@ -64,45 +71,94 @@ static size_t split_file(const char *f_in) {
         }
     }
 
-    size_t file_count = 0;
-    while (1) {
-        char f_out[MAX_FILE_NAME_LENGTH];
-        char tmp[20];
-
-        /* Checks EOF */
-        int scan_stat = 0;
-        if ((scan_stat = fscanf(fp_in, "%s", tmp)) == EOF)
+    size_t i;
+    int scan_stat = 0;
+    for (i = 0; scan_stat != EOF && i < MAX_FILES; i++) {
+        /* Read MAX_CHUNK_SIZE of integers from the input file */
+        size_t j;
+        for (j = 0; j < MAX_CHUNK_SIZE; j++) {
+            /* Checks EOF */
+            if ((scan_stat = fscanf(fp_in, "%d", &n[j])) == EOF)
+                break;
+        }
+        if (j == 0)
             break;
 
-        sprintf(f_out, "tmp/unsorted_%lu.txt", ++file_count);
+        merge_sort(n, 0, j - 1);
 
-        FILE *fp_out = fopen(f_out, "w");
-        if (!fp_out) {
+        char f_out[MAX_FILE_NAME_LENGTH];
+        sprintf(f_out, "tmp/%lu.txt", i + 1);
+
+        fp[i] = fopen(f_out, "w");
+        if (!fp[i]) {
             printf("Error: Cannot create file %s\n", f_out);
             exit(EXIT_FAILURE);
         }
 
-        /* Reads integers from f_in and writes to f_out */
-        fprintf(fp_out, "%s\n", tmp);
-        int count = 1;
-        while (count++ < MAX_CHUNK_SIZE &&
-               (scan_stat = fscanf(fp_in, "%s", tmp)) != EOF) {
-            fprintf(fp_out, "%s\n", tmp);
+        /* Writes the sorted array n to f_out */
+        size_t int_count = j;
+        for (j = 0; j < int_count; j++) {
+            fprintf(fp[i], "%d\n", n[j]);
         }
-        fclose(fp_out);
+
+        fclose(fp[i]);
     }
     fclose(fp_in);
 
     end = clock();
 
-    printf("Elapsed Time of split_file: %lf secs\n",
+    printf("Elapsed Time of split_file_and_sort: %lf secs\n",
            (double)(end - start) / CLOCKS_PER_SEC);
 
-    return file_count;
+    return i;
 }
 
 static void read_file() {}
 
 static void external_merge_sort(const char *f_in) {
-    size_t file_count = split_file(f_in);
+    size_t file_count = split_file_and_sort(f_in);
+}
+
+static void merge_sort(int arr[], int start, int end) {
+    if (end <= start)
+        return;
+
+    int middle = (start + end) >> 1;
+    merge_sort(arr, start, middle);
+    merge_sort(arr, middle + 1, end);
+    merge(arr, start, middle, end);
+}
+
+static void merge(int arr[], int start, int middle, int end) {
+    size_t len1 = middle - start + 1;
+    size_t len2 = end - middle;
+    int *a = malloc(len1 * sizeof(int));
+    int *b = malloc(len2 * sizeof(int));
+
+    if (!a || !b) {
+        puts("Error: malloc failed");
+        exit(EXIT_FAILURE);
+    }
+
+    size_t count1 = 0, count2 = 0;
+    for (int i = start; i <= middle; i++)
+        a[count1++] = arr[i];
+    for (int i = middle + 1; i <= end; i++)
+        b[count2++] = arr[i];
+
+    count1 = count2 = 0;
+    for (int i = start; i <= end; i++) {
+        if (count1 >= len1) {
+            arr[i] = b[count2++];
+        } else if (count2 >= len2) {
+            arr[i] = a[count1++];
+        } else if (a[count1] < b[count2]) {
+            arr[i] = a[count1++];
+        } else {
+            arr[i] = b[count2++];
+        }
+    }
+
+    free(a);
+    free(b);
 }
