@@ -6,14 +6,27 @@
 
 #define MAX_FILES 500
 #define MAX_FILE_NAME_LENGTH 30
-#define MAX_CHUNK_SIZE 24
+#define MAX_CHUNK_SIZE 1000
 
 static size_t split_file(const char *);
 static void read_file();
 static void external_merge_sort();
 
-int main() {
-    const char *f_in = "input2.txt";
+int main(int argc, char **argv) {
+    /* Default file */
+    char f_in[MAX_FILE_NAME_LENGTH] = "input2.txt";
+
+    /* Too many arguments */
+    if (argc > 2) {
+        puts("Error: Too many arguments");
+        puts("Usage: ./sort [input_file]");
+        exit(EXIT_FAILURE);
+    }
+
+    if (argc == 2)
+        sscanf(argv[1], "%s", f_in);
+    printf("Input file: %s\n", f_in);
+
     clock_t start, end;
 
     start = clock();
