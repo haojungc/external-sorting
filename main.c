@@ -8,8 +8,8 @@
 #define MAX_FILES 1000000
 #define MAX_CHUNK_SIZE 10
 
+static FILE *open_file(const char *filename, const char *mode);
 static size_t split_file_and_sort(const char *);
-static void read_file();
 static void external_merge_sort(const char *);
 static void merge_sort(int[], int, int);
 static void merge(int[], int, int, int);
@@ -46,16 +46,20 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+static FILE *open_file(const char *filename, const char *mode) {
+    FILE *fp = fopen(filename, mode);
+    if (!fp) {
+        printf("Error: Cannot open file %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+    return fp;
+}
+
 static size_t split_file_and_sort(const char *f_in) {
     clock_t start, end;
     start = clock();
 
-    FILE *fp_in = fopen(f_in, "r");
-
-    if (!fp_in) {
-        printf("Error: Cannot open file %s\n", f_in);
-        exit(EXIT_FAILURE);
-    }
+    FILE *fp_in = open_file(f_in, "r");
 
     /* Checks if directory tmp exists */
     struct stat st;
@@ -89,11 +93,7 @@ static size_t split_file_and_sort(const char *f_in) {
         char f_out[MAX_FILE_NAME_LENGTH];
         sprintf(f_out, "tmp/%lu.txt", i + 1);
 
-        fp[i] = fopen(f_out, "w");
-        if (!fp[i]) {
-            printf("Error: Cannot create file %s\n", f_out);
-            exit(EXIT_FAILURE);
-        }
+        fp[i] = open_file(f_out, "w");
 
         /* Writes the sorted array n to f_out */
         size_t int_count = j;
@@ -112,8 +112,6 @@ static size_t split_file_and_sort(const char *f_in) {
 
     return i;
 }
-
-static void read_file() {}
 
 static void external_merge_sort(const char *f_in) {
     size_t file_count = split_file_and_sort(f_in);
