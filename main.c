@@ -9,7 +9,7 @@
 
 static size_t split_file(const char *);
 static void read_file();
-static void external_merge_sort();
+static void external_merge_sort(const char *);
 
 int main(int argc, char **argv) {
     /* Default file */
@@ -30,9 +30,7 @@ int main(int argc, char **argv) {
 
     start = clock();
 
-    size_t file_count = split_file(f_in);
-
-    external_merge_sort();
+    external_merge_sort(f_in);
 
     end = clock();
 
@@ -105,4 +103,6 @@ static size_t split_file(const char *f_in) {
 
 static void read_file() {}
 
-static void external_merge_sort() {}
+static void external_merge_sort(const char *f_in) {
+    size_t file_count = split_file(f_in);
+}
