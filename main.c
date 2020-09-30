@@ -4,7 +4,6 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#define MAX_FILES 500
 #define MAX_FILE_NAME_LENGTH 30
 #define MAX_CHUNK_SIZE 1000
 
@@ -65,7 +64,7 @@ static size_t split_file(const char *f_in) {
     }
 
     size_t file_count = 0;
-    while (file_count < MAX_FILES) {
+    while (1) {
         char f_out[MAX_FILE_NAME_LENGTH];
         char tmp[20];
 
