@@ -9,6 +9,7 @@
 #define MAX_CHUNK_SIZE 10
 
 static FILE *open_file(const char *filename, const char *mode);
+static void make_dir(const char *dir, mode_t mode);
 static size_t split_file_and_sort(const char *);
 static void external_merge_sort(const char *);
 static void merge_sort(int[], int, int);
@@ -55,25 +56,29 @@ static FILE *open_file(const char *filename, const char *mode) {
     return fp;
 }
 
+static void make_dir(const char *dir, mode_t mode) {
+    /* Checks if dir exists */
+    struct stat st;
+    if (stat(dir, &st) == -1) {
+        int mkdir_stat = mkdir(dir, mode);
+        if (mkdir_stat == -1) {
+            printf("Error: Cannot create directory %s", dir);
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+
 static size_t split_file_and_sort(const char *f_in) {
     clock_t start, end;
     start = clock();
 
     FILE *fp_in = open_file(f_in, "r");
 
-    /* Checks if directory tmp exists */
-    struct stat st;
-    if (stat("tmp", &st) == -1) {
-        /* The Mode Bits for Access Permission
-         * Ref:
-         * https://www.gnu.org/software/libc/manual/html_node/Permission-Bits.html
-         */
-        int mkdir_stat = mkdir("tmp", S_IRWXU);
-        if (mkdir_stat == -1) {
-            puts("Error: Cannot create directory tmp");
-            exit(EXIT_FAILURE);
-        }
-    }
+    /* The Mode Bits for Access Permission
+     * Ref:
+     * https://www.gnu.org/software/libc/manual/html_node/Permission-Bits.html
+     */
+    make_dir("tmp", S_IRWXU);
 
     size_t i;
     int scan_stat = 0;
