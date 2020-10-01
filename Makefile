@@ -15,4 +15,4 @@ debug:
 	${CC} -g -o ${EXE} main.c
 
 clean:
-	rm -r -f ${EXE} generator tmp/
+	rm -r -f ${EXE} generator output.txt tmp/
