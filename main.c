@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #define MAX_FILE_NAME_LENGTH 30
 #define MAX_FILES 1000000
@@ -165,6 +166,11 @@ static void external_merge_sort(const char *f_in) {
         int tmp;
         /* End of the current file */
         if (fscanf(fp[curr], "%d", &tmp) == EOF) {
+            /* Closes the sorted file and deletes it */
+            fclose(fp[curr]);
+            char filename[MAX_FILE_NAME_LENGTH];
+            sprintf(filename, "tmp/%d.txt", curr + 1);
+            remove(filename);
             /* Updates min_heap */
             swap(&h->node[h->tail--], &h->node[1]);
             if (h->tail == 0)
@@ -178,14 +184,8 @@ static void external_merge_sort(const char *f_in) {
         curr = get_min_index(h);
     }
 
-    /* Deletes sorted files in tmp directory */
-
-    /* Closes sorted files in tmp directory */
-    for (int i = 0; i < file_count; i++)
-        fclose(fp[i]);
-
+    rmdir("tmp");
     fclose(fp_out);
-
     free(h->node);
     free(h);
 }
