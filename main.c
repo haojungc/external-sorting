@@ -1,3 +1,4 @@
+#include "heap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,23 +9,6 @@
 #define MAX_FILE_NAME_LENGTH 30
 #define MAX_FILES 1000000
 #define MAX_CHUNK_SIZE 10000
-
-typedef struct node {
-    int value;
-    int index;
-} node_t;
-
-typedef struct heap {
-    node_t *node; /* Note: index 0 will not be used */
-    int tail;     /* tail is the index of the last node in the heap */
-} heap_t;
-
-/* Functions for heap_t */
-static void build_min_heap(heap_t *h);
-static void min_heapify(heap_t *h, int curr);
-static int get_min_value(heap_t *h);
-static int get_min_index(heap_t *h);
-static void swap(node_t *n1, node_t *n2);
 
 static FILE *open_file(const char *filename, const char *mode);
 static void make_dir(const char *dir, mode_t mode);
@@ -188,42 +172,6 @@ static void external_merge_sort(const char *f_in) {
     fclose(fp_out);
     free(h->node);
     free(h);
-}
-
-static void build_min_heap(heap_t *h) {
-    for (int i = h->tail / 2; i >= 1; i--)
-        min_heapify(h, i);
-}
-
-static void min_heapify(heap_t *h, int curr) {
-    int l_child = (curr * 2 <= h->tail) ? curr * 2 : -1;
-    int r_child = ((curr << 1) + 1 <= h->tail) ? (curr << 1) + 1 : -1;
-
-    int min = curr;
-    if (l_child != -1 && h->node[l_child].value < h->node[min].value)
-        min = l_child;
-    if (r_child != -1 && h->node[r_child].value < h->node[min].value)
-        min = r_child;
-
-    if (min != curr) {
-        swap(&h->node[curr], &h->node[min]);
-        min_heapify(h, min);
-    }
-}
-
-static int get_min_value(heap_t *h) { return h->node[1].value; }
-
-static int get_min_index(heap_t *h) { return h->node[1].index; }
-
-static void swap(node_t *n1, node_t *n2) {
-    /* Swaps the values */
-    n1->value ^= n2->value;
-    n2->value ^= n1->value;
-    n1->value ^= n2->value;
-    /* Swaps the indices */
-    n1->index ^= n2->index;
-    n2->index ^= n1->index;
-    n1->index ^= n2->index;
 }
 
 static void merge_sort(int arr[], int start, int end) {
