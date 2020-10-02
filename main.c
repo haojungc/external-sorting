@@ -6,7 +6,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define MAX_FILE_NAME_LENGTH 30
+#define MAX_FILENAME_LENGTH 30
 #define MAX_FILES 1000000
 #define MAX_CHUNK_SIZE 10000
 
@@ -22,7 +22,7 @@ int n[MAX_CHUNK_SIZE];
 
 int main(int argc, char **argv) {
     /* Default file */
-    char f_in[MAX_FILE_NAME_LENGTH] = "input2.txt";
+    char f_in[MAX_FILENAME_LENGTH] = "input2.txt";
 
     /* Too many arguments */
     if (argc > 2) {
@@ -97,7 +97,7 @@ static size_t split_file_and_sort(const char *f_in) {
 
         merge_sort(n, 0, j - 1);
 
-        char f_out[MAX_FILE_NAME_LENGTH];
+        char f_out[MAX_FILENAME_LENGTH];
         sprintf(f_out, "tmp/%lu.txt", i + 1);
 
         fp[i] = open_file(f_out, "w");
@@ -125,7 +125,7 @@ static void external_merge_sort(const char *f_in) {
 
     /* Opens sorted files from tmp directory */
     for (size_t i = 0; i < file_count; i++) {
-        char filename[MAX_FILE_NAME_LENGTH];
+        char filename[MAX_FILENAME_LENGTH];
         sprintf(filename, "tmp/%lu.txt", i + 1);
         fp[i] = open_file(filename, "r");
     }
@@ -152,7 +152,7 @@ static void external_merge_sort(const char *f_in) {
         if (fscanf(fp[curr], "%d", &tmp) == EOF) {
             /* Closes the sorted file and deletes it */
             fclose(fp[curr]);
-            char filename[MAX_FILE_NAME_LENGTH];
+            char filename[MAX_FILENAME_LENGTH];
             sprintf(filename, "tmp/%d.txt", curr + 1);
             remove(filename);
             /* Updates min_heap */

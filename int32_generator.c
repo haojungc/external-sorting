@@ -3,14 +3,14 @@
 #include <time.h>
 #include <unistd.h>
 
-#define MAX_FILE_NAME_LENGTH 30
+#define MAX_FILENAME_LENGTH 30
 
 int main(int argc, char **argv) {
     srand(time(NULL));
 
     /* Default values */
     long long int n = 3e9;
-    char filename[MAX_FILE_NAME_LENGTH] = "input.txt";
+    char filename[MAX_FILENAME_LENGTH] = "input.txt";
 
     /* Too many arguments */
     if (argc > 3) {
