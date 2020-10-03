@@ -19,3 +19,4 @@ gen:
 
 clean:
 	rm -f $(EXE) generator *.o output.txt
+	rm -rf tmp/
