@@ -23,7 +23,7 @@ int n[MAX_CHUNK_SIZE];
 
 int main(int argc, char **argv) {
     /* Default file */
-    char f_in[MAX_FILENAME_LENGTH] = "input2.txt";
+    char f_in[MAX_FILENAME_LENGTH] = "input.txt";
 
     /* Too many arguments */
     if (argc > 2) {
