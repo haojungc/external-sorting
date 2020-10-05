@@ -9,6 +9,7 @@
 #define MAX_FILENAME_LENGTH 30
 #define MAX_FILES 1000
 #define MAX_CHUNK_SIZE 1000000
+#define BUFFER_SIZE 13 /* length of an integer */
 
 static FILE *open_file(const char *filename, const char *mode);
 static void make_dir(const char *dir, mode_t mode);
@@ -22,6 +23,7 @@ FILE *fp[MAX_FILES];
 int n[MAX_CHUNK_SIZE];
 
 int main(int argc, char **argv) {
+    printf("pid: %d\n", getpid());
     /* Default file */
     char f_in[MAX_FILENAME_LENGTH] = "input.txt";
 
@@ -34,8 +36,9 @@ int main(int argc, char **argv) {
 
     if (argc == 2)
         sscanf(argv[1], "%s", f_in);
-    printf("Input file: %s\n", f_in);
+    printf("Input file: %s\n\n", f_in);
 
+    puts("[Elapsed Time]");
     clock_t start, end;
     start = clock();
 
@@ -70,9 +73,6 @@ static void make_dir(const char *dir, mode_t mode) {
 }
 
 static size_t split_file_and_sort(const char *f_in) {
-    clock_t start, end;
-    start = clock();
-
     FILE *fp_in = open_file(f_in, "r");
 
     /* The Mode Bits for Access Permission
@@ -81,14 +81,18 @@ static size_t split_file_and_sort(const char *f_in) {
      */
     make_dir("tmp", S_IRWXU);
 
-    size_t i, scan_stat = 0;
-    for (i = 0; scan_stat != EOF; i++) {
+    size_t i;
+    char buf[BUFFER_SIZE];
+    char *scan_stat;
+    for (i = 0; scan_stat != NULL; i++) {
         /* Read MAX_CHUNK_SIZE of integers from the input file */
         int j;
         for (j = 0; j < MAX_CHUNK_SIZE; j++) {
             /* Checks EOF */
-            if ((scan_stat = fscanf(fp_in, "%d", &n[j])) == EOF)
+            if ((scan_stat = fgets(buf, BUFFER_SIZE, fp_in)) == NULL)
                 break;
+            buf[strlen(buf) - 1] = '\0';
+            n[j] = atoi(buf);
         }
         if (j == 0)
             break;
@@ -107,20 +111,27 @@ static size_t split_file_and_sort(const char *f_in) {
     }
     fclose(fp_in);
 
-    end = clock();
-    printf("Elapsed Time of split_file_and_sort: %lf secs\n",
-           (double)(end - start) / CLOCKS_PER_SEC);
-
     return i; /* The number of sorted files */
 }
 
 static void external_sort(const char *f_in) {
+    clock_t start, end;
+    start = clock();
+
     size_t total_files = split_file_and_sort(f_in);
 
+    end = clock();
+    printf("split_file_and_sort: %lf secs\n",
+           (double)(end - start) / CLOCKS_PER_SEC);
+
+    start = clock();
     do {
         /* Merges MAX_FILES of sorted files to one file */
         total_files = merge_files(total_files);
     } while (total_files > 1);
+
+    end = clock();
+    printf("merge_files: %lf secs\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     /* Moves the sorted file from tmp/ to current directory */
     char old[] = "tmp/1.txt", new[] = "output.txt";
