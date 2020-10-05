@@ -101,12 +101,10 @@ static size_t split_file_and_sort(const char *f_in) {
 
         char f_out[MAX_FILENAME_LENGTH];
         sprintf(f_out, "tmp/%lu.txt", i + 1);
-        FILE *fp_out = open_file(f_out, "w");
+        FILE *fp_out = open_file(f_out, "wb");
 
         /* Writes the sorted array n to f_out */
-        int int_count = j;
-        for (j = 0; j < int_count; j++)
-            fprintf(fp_out, "%d\n", n[j]);
+        fwrite(n, sizeof(int), j, fp_out);
         fclose(fp_out);
     }
     fclose(fp_in);
@@ -130,13 +128,19 @@ static void external_sort(const char *f_in) {
         total_files = merge_files(total_files);
     } while (total_files > 1);
 
+    char f_tmp[] = "tmp/1.txt", f_out[] = "output.txt";
+    FILE *fp_tmp = open_file(f_tmp, "rb"), *fp_out = open_file(f_out, "w");
+
+    int tmp;
+    while (fread(&tmp, sizeof(int), 1, fp_tmp) != 0)
+        fprintf(fp_out, "%d\n", tmp);
+    fclose(fp_tmp);
+    fclose(fp_out);
+    remove(f_tmp);
+    rmdir("tmp");
+
     end = clock();
     printf("merge_files: %lf secs\n", (double)(end - start) / CLOCKS_PER_SEC);
-
-    /* Moves the sorted file from tmp/ to current directory */
-    char old[] = "tmp/1.txt", new[] = "output.txt";
-    rename(old, new);
-    rmdir("tmp");
 }
 
 static size_t merge_files(size_t total_files) {
@@ -148,7 +152,7 @@ static size_t merge_files(size_t total_files) {
         for (size_t j = 0; j < size; j++) {
             char filename[MAX_FILENAME_LENGTH];
             sprintf(filename, "tmp/%lu.txt", i * MAX_FILES + j + 1);
-            fp[j] = open_file(filename, "r");
+            fp[j] = open_file(filename, "rb");
         }
 
         /* Creates a heap */
@@ -159,7 +163,7 @@ static size_t merge_files(size_t total_files) {
         /* Reads the first integers from each file
          * and stores them in the heap */
         for (int j = 0; j < size; j++) {
-            fscanf(fp[j], "%d", &h->node[j + 1].value);
+            fread(&h->node[j + 1].value, sizeof(int), 1, fp[j]);
             h->node[j + 1].index = j;
         }
 
@@ -170,14 +174,14 @@ static size_t merge_files(size_t total_files) {
          * and names it "tmp_x.txt" */
         char f_out[MAX_FILENAME_LENGTH];
         sprintf(f_out, "tmp/tmp_%lu.txt", i + 1);
-        FILE *fp_out = open_file(f_out, "w");
-        fprintf(fp_out, "%d\n", get_min_value(h));
+        FILE *fp_out = open_file(f_out, "wb");
+        fwrite(&h->node[1].value, sizeof(int), 1, fp_out);
 
         int curr = get_min_index(h);
         while (1) {
             int tmp;
             /* End of the current file */
-            if (fscanf(fp[curr], "%d", &tmp) == EOF) {
+            if (fread(&tmp, sizeof(int), 1, fp[curr]) == 0) {
                 /* Closes the sorted file and deletes it */
                 fclose(fp[curr]);
                 char filename[MAX_FILENAME_LENGTH];
@@ -192,7 +196,7 @@ static size_t merge_files(size_t total_files) {
                 h->node[1].index = curr;
             }
             min_heapify(h, 1);
-            fprintf(fp_out, "%d\n", get_min_value(h));
+            fwrite(&h->node[1].value, sizeof(int), 1, fp_out);
             curr = get_min_index(h);
         }
         fclose(fp_out);
